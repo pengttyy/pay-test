@@ -2,183 +2,192 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>支付宝链接测试</title>
+    <title>应用链接拉起测试</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .card { background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0; }
-        .btn { background: #1677ff; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; cursor: pointer; }
-        .btn:hover { background: #4096ff; }
-        .result { padding: 15px; border-radius: 6px; margin: 10px 0; }
-        .success { background: #f6ffed; border: 1px solid #b7eb8f; }
-        .error { background: #fff2f0; border: 1px solid #ffccc7; }
-        .tip { color: #666; font-size: 14px; margin-top: 5px; }
-        .scheme-box { background: #fff; padding: 15px; border-radius: 6px; border: 1px solid #d9d9d9; overflow-x: auto; font-family: monospace; }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: monospace;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1677ff;
+            box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+        }
+        .btn {
+            background: #1677ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #4096ff;
+        }
+        .btn:active {
+            background: #0958d9;
+        }
+        .tip {
+            color: #999;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        .result.success {
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .result.error {
+            background: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
     </style>
 </head>
 <body>
-    <h2>💰 支付宝链接拉起测试</h2>
-    
-    <div class="card">
-        <h3>测试链接</h3>
-        <div class="scheme-box">
-            alipays://platformapi/startApp?appId=10000007&actionType=route&qrcode=281666040090amlr2tmCi9g3CG9g28G30Ey4
+    <div class="container">
+        <h2>🔗 应用链接拉起测试</h2>
+        
+        <div class="input-group">
+            <label for="appLinkInput">请输入应用链接（如：alipays://... 或其他 scheme 链接）</label>
+            <input type="text" id="appLinkInput" placeholder="例如: alipays://platformapi/startApp?appId=10000007">
+            <div class="tip">支持支付宝、微信等应用的 scheme 链接</div>
         </div>
         
-        <div style="margin-top: 20px;">
-            <button class="btn" onclick="testAlipay()">
-                点击测试拉起支付宝
-            </button>
-            <div class="tip">点击后会自动尝试打开支付宝</div>
-        </div>
+        <button class="btn" onclick="openAppLink()">打开链接</button>
+        
+        <div id="result" class="result"></div>
     </div>
-    
-    <div id="result" class="card" style="display: none;">
-        <h3>测试结果</h3>
-        <div id="resultContent"></div>
-    </div>
-    
-    <div class="card">
-        <h3>备选方案</h3>
-        <button class="btn" onclick="testAlternative()" style="background: #52c41a;">
-            备用方案测试
-        </button>
-        <button class="btn" onclick="generateQRCode()" style="background: #722ed1;">
-            生成测试二维码
-        </button>
-        <button class="btn" onclick="copyLink()" style="background: #fa8c16;">
-            复制链接
-        </button>
-    </div>
-    
-    <div id="qrcodeContainer" class="card" style="display: none;">
-        <h3>测试二维码</h3>
-        <div id="qrcode"></div>
-        <div class="tip">使用支付宝扫一扫此二维码进行测试</div>
-    </div>
-    
+
     <script>
-        // 要测试的链接
-        const alipayLink = 'alipays://platformapi/startApp?appId=10000007&actionType=route&qrcode=281666040090amlr2tmCi9g3CG9g28G30Ey4';
-        
         function showResult(message, isSuccess) {
             const resultEl = document.getElementById('result');
-            const contentEl = document.getElementById('resultContent');
-            
-            contentEl.innerHTML = `<div class="result ${isSuccess ? 'success' : 'error'}">${message}</div>`;
+            resultEl.textContent = message;
+            resultEl.className = 'result ' + (isSuccess ? 'success' : 'error');
             resultEl.style.display = 'block';
-            resultEl.scrollIntoView({ behavior: 'smooth' });
         }
-        
-        function testAlipay() {
-            showResult('正在尝试拉起支付宝...', true);
+
+        function openAppLink() {
+            const input = document.getElementById('appLinkInput');
+            const link = input.value.trim();
+            
+            if (!link) {
+                showResult('❌ 请输入链接', false);
+                return;
+            }
+            
+            // 验证链接格式
+            if (!link.includes('://')) {
+                showResult('❌ 链接格式不正确，应包含协议（如 alipays://）', false);
+                return;
+            }
+            
+            showResult('正在尝试打开链接...', true);
             
             // 记录开始时间
             const startTime = Date.now();
             let pageHidden = false;
+            let visibilityHandler = null;
             
-            // 监听页面隐藏事件（跳转到支付宝时页面会隐藏）
-            document.addEventListener('visibilitychange', () => {
+            // 监听页面隐藏事件（跳转到应用时页面会隐藏）
+            visibilityHandler = () => {
                 if (document.hidden) {
                     pageHidden = true;
                     const elapsed = Date.now() - startTime;
-                    showResult(`✅ 成功拉起支付宝 (${elapsed}ms)<br>页面已隐藏，正在跳转...`, true);
+                    showResult(`✅ 成功拉起应用 (${elapsed}ms)`, true);
+                    document.removeEventListener('visibilitychange', visibilityHandler);
                 }
-            });
+            };
+            document.addEventListener('visibilitychange', visibilityHandler);
             
-            // 尝试直接打开支付宝
-            window.location.href = alipayLink;
+            try {
+                // 方法1: 创建隐藏的 <a> 标签并触发点击（兼容性最好）
+                const linkElement = document.createElement('a');
+                linkElement.href = link;
+                linkElement.style.display = 'none';
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+                
+                // 方法2: 如果方法1失败，尝试使用 window.location
+                setTimeout(() => {
+                    if (!pageHidden) {
+                        try {
+                            window.location.href = link;
+                        } catch (e) {
+                            console.error('跳转失败:', e);
+                        }
+                    }
+                }, 100);
+                
+            } catch (error) {
+                console.error('打开链接失败:', error);
+                showResult(`❌ 打开失败: ${error.message}`, false);
+            }
             
             // 检查是否成功（3秒后如果页面还没隐藏，说明失败）
             setTimeout(() => {
                 if (!pageHidden) {
                     const elapsed = Date.now() - startTime;
+                    if (visibilityHandler) {
+                        document.removeEventListener('visibilitychange', visibilityHandler);
+                    }
                     showResult(
-                        `❌ 拉起失败 (${elapsed}ms)<br><br>
-                        <strong>可能原因：</strong><br>
-                        1. 未安装支付宝App<br>
-                        2. 浏览器阻止了跳转<br>
-                        3. 链接格式不被支持<br><br>
-                        <strong>解决方案：</strong><br>
-                        1. 请确保已安装支付宝<br>
-                        2. 尝试使用下方的备用方案<br>
-                        3. 使用支付宝扫码二维码测试`, 
+                        `❌ 打开失败 (${elapsed}ms)\n\n可能原因：\n1. 未安装对应的应用\n2. 浏览器阻止了跳转\n3. 链接格式不被支持\n\n解决方案：\n1. 请确保已安装对应的应用\n2. 尝试在手机浏览器中打开此页面\n3. 检查链接格式是否正确`,
                         false
                     );
                 }
             }, 3000);
         }
         
-        function testAlternative() {
-            // 备用方案：通过支付宝官方中间页
-            const encodedLink = encodeURIComponent(alipayLink);
-            const fallbackUrl = `https://ds.alipay.com/?from=mobilecodec&scheme=${encodedLink}`;
-            
-            showResult('正在通过支付宝中间页跳转...', true);
-            window.open(fallbackUrl, '_blank');
-        }
-        
-        function generateQRCode() {
-            const container = document.getElementById('qrcodeContainer');
-            const qrcodeDiv = document.getElementById('qrcode');
-            
-            // 清空之前的内容
-            qrcodeDiv.innerHTML = '';
-            
-            // 生成二维码
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(alipayLink)}`;
-            
-            const img = document.createElement('img');
-            img.src = qrUrl;
-            img.alt = '支付宝测试二维码';
-            img.style.border = '1px solid #eee';
-            img.style.padding = '10px';
-            img.style.background = 'white';
-            
-            qrcodeDiv.appendChild(img);
-            container.style.display = 'block';
-            container.scrollIntoView({ behavior: 'smooth' });
-            
-            showResult('✅ 二维码已生成，请使用支付宝扫一扫测试', true);
-        }
-        
-        function copyLink() {
-            navigator.clipboard.writeText(alipayLink).then(() => {
-                showResult('✅ 链接已复制到剪贴板', true);
-            }).catch(err => {
-                // 兼容旧浏览器
-                const textArea = document.createElement('textarea');
-                textArea.value = alipayLink;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showResult('✅ 链接已复制到剪贴板', true);
-            });
-        }
-        
-        // 自动检测环境
-        window.onload = function() {
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const isAlipay = navigator.userAgent.includes('AlipayClient');
-            
-            let envInfo = '';
-            if (isAlipay) {
-                envInfo = '📱 检测到您在支付宝内置浏览器中';
-            } else if (isMobile) {
-                envInfo = '📱 检测到您在手机浏览器中';
-            } else {
-                envInfo = '💻 检测到您在电脑浏览器中，请使用手机测试';
+        // 支持回车键触发
+        document.getElementById('appLinkInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                openAppLink();
             }
-            
-            const resultEl = document.getElementById('result');
-            resultEl.innerHTML = `
-                <h3>环境检测</h3>
-                <div class="result success">${envInfo}</div>
-                <div class="tip">用户代理: ${navigator.userAgent.substring(0, 100)}...</div>
-            `;
-            resultEl.style.display = 'block';
-        };
+        });
     </script>
 </body>
 </html>
+
